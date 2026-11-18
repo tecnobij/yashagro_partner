@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:partener_app/services/shared_prefs.dart';
@@ -8,6 +9,17 @@ import 'package:partener_app/expert/chats/controller/web_socket_controller.dart'
 import '../models/user_model.dart';
 import '../utils/helpers.dart';
 import '../utils/app_routes.dart';
+
+Map<String, dynamic> decodeJwt(String token) {
+  final parts = token.split('.');
+  if (parts.length < 2) {
+    throw Exception('Invalid token');
+  }
+  final payload = parts[1];
+  var normalized = base64Url.normalize(payload);
+  var resp = utf8.decode(base64Url.decode(normalized));
+  return json.decode(resp);
+}
 
 class AuthController extends GetxController {
   final ApiService _apiService = ApiService();
@@ -68,8 +80,32 @@ class AuthController extends GetxController {
     isLoading.value = false;
 
     if (user == null) {
-      showErrorSnackbar("Failed to fetch profile.");
-      return;
+      // Fallback: decode JWT token to get user ID and role ID
+      int? userId;
+      int? roleId;
+      try {
+        final token = await SharedPrefs.getUserToken();
+        if (token != null) {
+          final payload = decodeJwt(token);
+          userId = payload['id'];
+          roleId = payload['role_id'];
+          print("Fallback: Decoded JWT payload: $payload");
+        }
+      } catch (e) {
+        print("Failed to decode JWT fallback: $e");
+      }
+
+      if (userId == null || roleId == null) {
+        showErrorSnackbar("Failed to fetch profile.");
+        return;
+      }
+
+      // Construct a minimal user model
+      user = UserModel(
+        id: userId,
+        roleId: roleId,
+        name: "Manager", // default fallback name
+      );
     }
 
     // ✅ Store User ID & Role in Local Storage

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:partener_app/constants.dart';
+import 'package:partener_app/services/shared_prefs.dart';
 
 class RoutingService {
   static final Dio _dio = Dio();
@@ -101,6 +103,33 @@ class RoutingService {
     }
 
     return points;
+  }
+
+  /// Fetches the employee-range-summary directly from the backend
+  static Future<Map<String, dynamic>?> fetchRouteRangeSummaryDirect(
+      int employeeId, String startDate, String endDate) async {
+    try {
+      final token = await SharedPrefs.getUserToken() ?? '';
+      final url = "${ApiRoutes.baseUri}/api/employee-range-summary?employee_id=$employeeId&start_date=$startDate&end_date=$endDate";
+      
+      final response = await _dio.get(
+        url,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final res = response.data;
+        if (res['success'] == true && res['data'] != null) {
+          return Map<String, dynamic>.from(res['data']);
+        }
+      }
+    } catch (e) {
+      log("Error fetching range summary in RoutingService: $e", name: 'routing_service');
+    }
+    return null;
   }
 }
 

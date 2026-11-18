@@ -55,11 +55,11 @@ class SuperManagerApiService {
     }
   }
 
-  /// Get all users and filter for employees/marketers (role_id = 7)
+  /// Get all employees/marketers
   Future<List<dynamic>> getAllEmployees() async {
     try {
       final response = await _dio.get(
-        "$_base${ApiRoutes.adminUsersEndpoint}",
+        "$_base${ApiRoutes.myEmployeesEndpoint}",
         options: await _getAuthOptions(),
       );
 
@@ -73,13 +73,7 @@ class SuperManagerApiService {
           users = data;
         }
 
-        // Filter users to return only those with role_id == 7 (Marketers)
-        return users.where((user) {
-          if (user is Map) {
-            return user['role_id'] == 7 || user['role_id'] == '7';
-          }
-          return false;
-        }).toList();
+        return users;
       }
       return [];
     } catch (e) {
@@ -108,17 +102,17 @@ class SuperManagerApiService {
   }
 
   /// Assign/Change Manager for an employee
-  Future<bool> assignManager({required int employeeId, required int managerId}) async {
+  Future<bool> assignManager({
+    required int employeeId,
+    required int managerId,
+  }) async {
     try {
       final options = await _getAuthOptions();
-      
+
       // Try assign-employee endpoint first
       final res1 = await _dio.post(
         "$_base/api/manager/assign-employee",
-        data: {
-          "employee_id": employeeId,
-          "manager_id": managerId,
-        },
+        data: {"employee_id": employeeId, "manager_id": managerId},
         options: options,
       );
 
@@ -134,10 +128,7 @@ class SuperManagerApiService {
       // Try change-manager endpoint as fallback
       final res2 = await _dio.post(
         "$_base/api/manager/change-manager",
-        data: {
-          "employee_id": employeeId,
-          "manager_id": managerId,
-        },
+        data: {"employee_id": employeeId, "manager_id": managerId},
         options: options,
       );
 

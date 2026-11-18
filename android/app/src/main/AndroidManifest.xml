@@ -35,6 +35,8 @@
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location"
             android:exported="false"
+            android:enabled="true"
+            android:stopWithTask="false"
             tools:replace="android:exported"/>
         
         <activity

@@ -9,6 +9,7 @@ import 'package:partener_app/managers/controller/manager_employee_details_contro
 import 'package:partener_app/marketer/controller/marketer_dashboard_controller.dart';
 import 'package:partener_app/models/user_model.dart';
 import 'package:partener_app/services/routing_service.dart';
+import 'package:partener_app/widgets/fullscreen_map_screen.dart';
 
 class ManagerEmployeeDetailsScreen extends StatefulWidget {
   final UserModel employee;
@@ -370,12 +371,14 @@ class _ManagerEmployeeDetailsScreenState
 
     // Parse coordinates
     final List<LatLng> routePoints = [];
-    
+
     // Sort locations chronologically
     final sortedLocations = List<dynamic>.from(locations);
     sortedLocations.sort((a, b) {
-      final aTime = a['recorded_at']?.toString() ?? a['created_at']?.toString() ?? '';
-      final bTime = b['recorded_at']?.toString() ?? b['created_at']?.toString() ?? '';
+      final aTime =
+          a['recorded_at']?.toString() ?? a['created_at']?.toString() ?? '';
+      final bTime =
+          b['recorded_at']?.toString() ?? b['created_at']?.toString() ?? '';
       return aTime.compareTo(bTime);
     });
 
@@ -561,7 +564,8 @@ class _ManagerEmployeeDetailsScreenState
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.partener_app',
                     ),
                     if (routePoints.isNotEmpty)
@@ -603,7 +607,9 @@ class _ManagerEmployeeDetailsScreenState
                             width: 38,
                             height: 38,
                             child: GestureDetector(
-                              onTap: () => _showVisitDetailsBottomSheet(context, v),
+                              onTap:
+                                  () =>
+                                      _showVisitDetailsBottomSheet(context, v),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color:
@@ -611,7 +617,10 @@ class _ManagerEmployeeDetailsScreenState
                                           ? Colors.green.shade600
                                           : Colors.orange.shade600,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.15),
@@ -635,29 +644,84 @@ class _ManagerEmployeeDetailsScreenState
                     ),
                   ],
                 ),
-                if (routePoints.isNotEmpty)
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            spreadRadius: 1,
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.fullscreen_rounded,
+                            color: Colors.blue,
                           ),
-                        ],
+                          tooltip: "Full Screen Map",
+                          onPressed: () {
+                            Get.to(
+                              () => FullscreenMapScreen(
+                                routePoints: routePoints,
+                                visits:
+                                    visits
+                                        .map(
+                                          (v) => Map<String, dynamic>.from(v),
+                                        )
+                                        .toList(),
+                                title: widget.employee.name ?? 'Employee Route',
+                                subtitle: DateFormat(
+                                  'EEEE, d MMMM yyyy',
+                                ).format(
+                                  marketerController
+                                          .selectedSpecificDay
+                                          .value ??
+                                      DateTime.now(),
+                                ),
+                                initialCenter: mapCenter,
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.map_rounded, color: Colors.blue),
-                        tooltip: "Open in Google Maps",
-                        onPressed: () => RoutingService.launchGoogleMapsRoute(routePoints),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.navigation_rounded,
+                            color: Colors.blue,
+                          ),
+                          tooltip: "Open in Google Maps",
+                          onPressed:
+                              () => RoutingService.launchGoogleMapsRoute(
+                                routePoints.isNotEmpty
+                                    ? routePoints
+                                    : [mapCenter],
+                              ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -1290,201 +1354,230 @@ class _ManagerEmployeeDetailsScreenState
         return StatefulBuilder(
           builder: (context, setState) {
             final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+            Widget buildDatePill({
+              required String label,
+              required bool isSelected,
+              required VoidCallback onTap,
+            }) {
+              return Expanded(
+                child: GestureDetector(
+                  onTap: onTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.blue.shade700 : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color:
+                            isSelected
+                                ? Colors.blue.shade700
+                                : Colors.grey.shade300,
+                      ),
+                      boxShadow:
+                          isSelected
+                              ? [
+                                BoxShadow(
+                                  color: Colors.blue.shade200.withOpacity(0.5),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                              : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            final isToday =
+                DateFormat('yyyy-MM-dd').format(DateTime.now()) == dateStr;
+            final isTomorrow =
+                DateFormat(
+                  'yyyy-MM-dd',
+                ).format(DateTime.now().add(const Duration(days: 1))) ==
+                dateStr;
+            final isCalendarSelected = !isToday && !isTomorrow;
+
             return AlertDialog(
+              backgroundColor: const Color(0xFFF4F9F9),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(28),
               ),
-              title: const Text(
-                'Assign Daily Targets',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 8,
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              title: const Center(
+                child: Text(
+                  'Assign Daily Targets',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                    color: Colors.black87,
+                  ),
+                ),
               ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Date selection options
                     const Text(
                       "Select Target Date",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: Colors.black54,
+                        fontSize: 12,
+                        color: Colors.grey,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  DateFormat(
-                                            'yyyy-MM-dd',
-                                          ).format(DateTime.now()) ==
-                                          dateStr
-                                      ? Colors.blue.shade700
-                                      : Colors.grey.shade100,
-                              foregroundColor:
-                                  DateFormat(
-                                            'yyyy-MM-dd',
-                                          ).format(DateTime.now()) ==
-                                          dateStr
-                                      ? Colors.white
-                                      : Colors.black87,
-                              elevation: 0,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                selectedDate = DateTime.now();
-                              });
-                            },
-                            child: const Text(
-                              "Today",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
+                        buildDatePill(
+                          label: "Today",
+                          isSelected: isToday,
+                          onTap:
+                              () =>
+                                  setState(() => selectedDate = DateTime.now()),
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  DateFormat('yyyy-MM-dd').format(
-                                            DateTime.now().add(
-                                              const Duration(days: 1),
-                                            ),
-                                          ) ==
-                                          dateStr
-                                      ? Colors.blue.shade700
-                                      : Colors.grey.shade100,
-                              foregroundColor:
-                                  DateFormat('yyyy-MM-dd').format(
-                                            DateTime.now().add(
-                                              const Duration(days: 1),
-                                            ),
-                                          ) ==
-                                          dateStr
-                                      ? Colors.white
-                                      : Colors.black87,
-                              elevation: 0,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        const SizedBox(width: 8),
+                        buildDatePill(
+                          label: "Tomorrow",
+                          isSelected: isTomorrow,
+                          onTap:
+                              () => setState(
+                                () =>
+                                    selectedDate = DateTime.now().add(
+                                      const Duration(days: 1),
+                                    ),
                               ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                selectedDate = DateTime.now().add(
-                                  const Duration(days: 1),
-                                );
-                              });
-                            },
-                            child: const Text(
-                              "Tomorrow",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade100,
-                              foregroundColor: Colors.black87,
-                              elevation: 0,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        const SizedBox(width: 8),
+                        buildDatePill(
+                          label: "Calendar",
+                          isSelected: isCalendarSelected,
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDate,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
                               ),
-                            ),
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime.now().subtract(
-                                  const Duration(days: 30),
-                                ),
-                                lastDate: DateTime.now().add(
-                                  const Duration(days: 365),
-                                ),
-                              );
-                              if (picked != null) {
-                                setState(() {
-                                  selectedDate = picked;
-                                });
-                              }
-                            },
-                            child: const Text(
-                              "Calendar",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
+                            );
+                            if (picked != null) {
+                              setState(() => selectedDate = picked);
+                            }
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Center(
-                      child: Text(
-                        "Target Date: ${DateFormat('EEE, d MMMM yyyy').format(selectedDate)}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.blue.shade800,
-                        ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blue.shade100),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.calendar_month_rounded,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat(
+                              'EEEE, d MMMM yyyy',
+                            ).format(selectedDate),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                    // Farm Visit input
+                    // Farm Visits input
                     TextField(
                       controller: farmController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Farm Visits Target Count',
-                        hintText: 'e.g. 3',
+                        labelText: 'Farm Visits',
+                        hintText: 'Enter target count (e.g. 5)',
                         filled: true,
-                        fillColor: Colors.grey.shade50,
-                        prefixIcon: const Icon(
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(
                           Icons.agriculture_rounded,
-                          color: Colors.green,
+                          color: Colors.green.shade600,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Colors.blue.shade400,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
 
-                    // Store Visit input
+                    // Store Visits input
                     TextField(
                       controller: storeController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Store/Shop Visits Target Count',
-                        hintText: 'e.g. 4',
+                        labelText: 'Store/Shop Visits',
+                        hintText: 'Enter target count (e.g. 5)',
                         filled: true,
-                        fillColor: Colors.grey.shade50,
-                        prefixIcon: const Icon(
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(
                           Icons.storefront_rounded,
-                          color: Colors.orange,
+                          color: Colors.orange.shade600,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Colors.blue.shade400,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -1492,54 +1585,74 @@ class _ManagerEmployeeDetailsScreenState
                 ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.grey.shade700),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final farmVal = int.tryParse(farmController.text) ?? 0;
-                    final storeVal = int.tryParse(storeController.text) ?? 0;
-                    if (farmVal == 0 && storeVal == 0) {
-                      Get.snackbar(
-                        'Error',
-                        'Please enter at least one target count',
-                      );
-                      return;
-                    }
-                    if (widget.employee.id == null) {
-                      Get.snackbar('Error', 'Invalid employee ID');
-                      return;
-                    }
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final farmVal =
+                              int.tryParse(farmController.text) ?? 0;
+                          final storeVal =
+                              int.tryParse(storeController.text) ?? 0;
+                          if (farmVal == 0 && storeVal == 0) {
+                            Get.snackbar(
+                              'Error',
+                              'Please enter at least one target count',
+                            );
+                            return;
+                          }
+                          if (widget.employee.id == null) {
+                            Get.snackbar('Error', 'Invalid employee ID');
+                            return;
+                          }
 
-                    final success = await controller.assignDailyTargets(
-                      employeeId: widget.employee.id!,
-                      farmTargetCount: farmVal,
-                      storeTargetCount: storeVal,
-                      targetDate: dateStr,
-                    );
+                          final success = await controller.assignDailyTargets(
+                            employeeId: widget.employee.id!,
+                            farmTargetCount: farmVal,
+                            storeTargetCount: storeVal,
+                            targetDate: dateStr,
+                          );
 
-                    if (success) {
-                      if (context.mounted) Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                          if (success) {
+                            if (context.mounted) Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Assign Targets',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                    elevation: 0,
-                  ),
-                  child: const Text('Assign Targets'),
+                  ],
                 ),
               ],
             );
@@ -1971,13 +2084,38 @@ class _ManagerEmployeeDetailsScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Today's Target Progress",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Today's Target Progress",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _showAssignTargetDialog(context),
+                icon: const Icon(Icons.add, size: 16, color: Colors.blue),
+                label: const Text(
+                  "Add Target",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           _buildProgressItem("Farm Visits", compFarm, totalFarm, Colors.green),
@@ -2180,14 +2318,6 @@ class _ManagerEmployeeDetailsScreenState
         selectedRange.start.month != selectedRange.end.month ||
         selectedRange.start.day != selectedRange.end.day;
 
-    print(
-      "DEBUG selectedRange: ${selectedRange.start} to ${selectedRange.end}",
-    );
-    print("DEBUG isMultiDay: $isMultiDay");
-    print(
-      "DEBUG rangeDaysList length: ${marketerController.rangeDaysList.length}",
-    );
-
     if (!isMultiDay) return const SizedBox.shrink();
 
     double totalDistance = 0.0;
@@ -2288,127 +2418,6 @@ class _ManagerEmployeeDetailsScreenState
                 ],
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 8),
-          const Text(
-            "Daily Breakdown",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: marketerController.rangeDaysList.length,
-            separatorBuilder:
-                (context, index) =>
-                    Divider(color: Colors.grey.shade100, height: 1),
-            itemBuilder: (context, index) {
-              final dayData = marketerController.rangeDaysList[index];
-              final date = dayData['date'] as DateTime;
-              final dist = dayData['travel_meter'] ?? 0;
-              final ws = dayData['work_session'];
-              final hasSession = ws != null;
-              final mins = hasSession
-                  ? int.tryParse(ws['working_minutes']?.toString() ?? '') ?? 0
-                  : 0;
-              final hrs = mins ~/ 60;
-              final remMins = mins % 60;
-              final timeStr = hrs > 0 ? "${hrs}h ${remMins}m" : "${remMins}m";
-
-              final isSelected =
-                  marketerController.selectedSpecificDay.value != null &&
-                  DateFormat(
-                        'yyyy-MM-dd',
-                      ).format(marketerController.selectedSpecificDay.value!) ==
-                      DateFormat('yyyy-MM-dd').format(date);
-
-              Color dateColor = isSelected ? Colors.blue.shade700 : Colors.black87;
-              Color timeColor = isSelected ? Colors.blue.shade700 : Colors.grey.shade600;
-              if (!hasSession) {
-                dateColor = isSelected ? Colors.red.shade700 : Colors.grey.shade500;
-                timeColor = isSelected ? Colors.red.shade700 : Colors.red.shade300;
-              }
-
-              return InkWell(
-                onTap: () => marketerController.selectSpecificDay(date),
-                child: Container(
-                  color: !hasSession && !isSelected ? Colors.grey.shade50.withOpacity(0.5) : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 8.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today_rounded,
-                            size: 14,
-                            color: !hasSession 
-                                ? (isSelected ? Colors.red.shade700 : Colors.grey)
-                                : (isSelected ? Colors.blue.shade700 : Colors.grey),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            DateFormat('EEE, d MMM').format(date),
-                            style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: dateColor,
-                              fontSize: 12,
-                            ),
-                          ),
-                          if (!hasSession) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              "(No Session)",
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.red.shade900 : Colors.red.shade400,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            "$dist km",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: !hasSession ? Colors.grey.shade500 : Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 1,
-                            height: 10,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            timeStr,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                              color: timeColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),

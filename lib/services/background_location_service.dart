@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:dio/dio.dart';
@@ -38,7 +39,8 @@ Future<void> initializeBackgroundService() async {
         FlutterLocalNotificationsPlugin();
     await plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
@@ -46,6 +48,8 @@ Future<void> initializeBackgroundService() async {
     androidConfiguration: AndroidConfiguration(
       onStart: onBackgroundServiceStart,
       autoStart: false, // ✅ We start it manually when work begins
+      autoStartOnBoot:
+          true, // ✅ Recover if device restarts while work is active
       isForegroundMode: true,
       notificationChannelId: _kChannelId,
       initialNotificationTitle: 'Location Tracking',
@@ -121,6 +125,86 @@ void onBackgroundServiceStart(ServiceInstance service) async {
   });
 
   // ── Immediately send one location update, then repeat every 60 s ────────
+  // ── Sync offline cached locations to server ───────────────────────────────
+  Future<void> syncOfflineLocations(
+    SharedPreferences prefs,
+    String token,
+    Dio dio,
+    io.Socket? socket,
+  ) async {
+    final cachedListRaw = prefs.getStringList('offline_locations') ?? [];
+    if (cachedListRaw.isEmpty) return;
+
+    log(
+      '🔄 Found ${cachedListRaw.length} cached offline locations. Syncing...',
+      name: 'bg_location',
+    );
+    List<String> failedItems = [];
+    bool isFailed = false;
+
+    for (var itemStr in cachedListRaw) {
+      if (isFailed) {
+        failedItems.add(itemStr);
+        continue;
+      }
+
+      try {
+        final payload = jsonDecode(itemStr) as Map<String, dynamic>;
+        final sendData = {
+          'location': payload['location'],
+          'accuracy': payload['accuracy'],
+          'battery_percentage': payload['battery_percentage'],
+          'speed': payload['speed'],
+        };
+        if (payload.containsKey('recorded_at')) {
+          sendData['recorded_at'] = payload['recorded_at'];
+        }
+
+        if (socket != null && socket.connected) {
+          final completer = Completer<bool>();
+          socket.emitWithAck(
+            'updateLocation',
+            sendData,
+            ack: (response) {
+              final success = response is Map && response['success'] == true;
+              completer.complete(success);
+            },
+          );
+          final success = await completer.future.timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => false,
+          );
+          if (!success) throw Exception("Websocket ack failed");
+        } else {
+          final response = await dio.post(
+            '${ApiRoutes.baseUri}${ApiRoutes.locationEndpoint}',
+            data: sendData,
+            options: Options(
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              },
+            ),
+          );
+          if (response.statusCode == null || response.statusCode! >= 300) {
+            throw Exception("HTTP Status: ${response.statusCode}");
+          }
+        }
+        log(
+          '✅ Synced offline location point successfully.',
+          name: 'bg_location',
+        );
+      } catch (e) {
+        log('❌ Failed to sync location point: $e', name: 'bg_location');
+        isFailed = true;
+        failedItems.add(itemStr);
+      }
+    }
+
+    await prefs.setStringList('offline_locations', failedItems);
+  }
+
+  // ── Immediately send one location update, then repeat every 60 s ────────
   Future<void> sendLocationUpdate() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -137,7 +221,10 @@ void onBackgroundServiceStart(ServiceInstance service) async {
 
       final token = prefs.getString(_kTokenKey);
       if (token == null || token.isEmpty) {
-        log('⚠️ No auth token found. Skipping location update.', name: 'bg_location');
+        log(
+          '⚠️ No auth token found. Skipping location update.',
+          name: 'bg_location',
+        );
         return;
       }
 
@@ -155,7 +242,7 @@ void onBackgroundServiceStart(ServiceInstance service) async {
       final location = '${position.latitude},${position.longitude}';
 
       log(
-        '📍 Uploading location: $location | battery=$batteryLevel% | accuracy=${position.accuracy}m',
+        '📍 Cache location locally: $location | battery=$batteryLevel% | accuracy=${position.accuracy}m',
         name: 'bg_location',
       );
 
@@ -163,36 +250,20 @@ void onBackgroundServiceStart(ServiceInstance service) async {
         'lat: ${position.latitude.toStringAsFixed(4)}, lng: ${position.longitude.toStringAsFixed(4)}',
       );
 
-      // Emit over WebSocket if connected
-      if (socket != null && socket!.connected) {
-        final payload = {
-          'location': location,
-          'accuracy': position.accuracy,
-          'battery_percentage': batteryLevel,
-          'speed': position.speed,
-        };
-        log('📍 Emitting location via background WebSocket: $payload', name: 'bg_location');
-        socket!.emit('updateLocation', payload);
-      } else {
-        // Fallback to HTTP POST
-        log('⚠️ Background WebSocket not connected. Falling back to HTTP POST.', name: 'bg_location');
-        final response = await dio.post(
-          '${ApiRoutes.baseUri}${ApiRoutes.locationEndpoint}',
-          data: {
-            'location': location,
-            'accuracy': position.accuracy,
-            'battery_percentage': batteryLevel,
-            'speed': position.speed,
-          },
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-            },
-          ),
-        );
-        log('✅ Location uploaded via HTTP. Status: ${response.statusCode}', name: 'bg_location');
-      }
+      // Cache this point locally first
+      final cachedListRaw = prefs.getStringList('offline_locations') ?? [];
+      final payload = {
+        'location': location,
+        'accuracy': position.accuracy,
+        'battery_percentage': batteryLevel,
+        'speed': position.speed,
+        'recorded_at': DateTime.now().toUtc().toIso8601String(),
+      };
+      cachedListRaw.add(jsonEncode(payload));
+      await prefs.setStringList('offline_locations', cachedListRaw);
+
+      // Now sync all cached points to the server
+      await syncOfflineLocations(prefs, token, dio, socket);
     } catch (e) {
       log('❌ Error in background location update: $e', name: 'bg_location');
     }

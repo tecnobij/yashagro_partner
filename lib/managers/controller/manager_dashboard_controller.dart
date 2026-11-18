@@ -6,10 +6,12 @@ import 'package:partener_app/managers/repo/manager_api_service.dart';
 import 'package:partener_app/models/user_model.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import 'package:partener_app/services/api_service.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 class ManagerDashboardController extends GetxController {
   final ManagerApiService _managerApi = ManagerApiService();
   final ApiService _apiService = ApiService();
+  final MapController dashboardMapController = MapController();
 
   var isLoading = false.obs;
   var isActionLoading = false.obs;
@@ -48,6 +50,23 @@ class ManagerDashboardController extends GetxController {
           dataList
               .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
               .toList();
+
+      for (var empJson in dataList) {
+        final id = empJson['id'] as int?;
+        if (id != null) {
+          final locStr = empJson['location']?.toString();
+          if (locStr != null && locStr.isNotEmpty) {
+            final parts = locStr.split(',');
+            if (parts.length >= 2) {
+              final lat = double.tryParse(parts[0].trim());
+              final lng = double.tryParse(parts[1].trim());
+              if (lat != null && lng != null) {
+                employeeLocations[id] = LatLng(lat, lng);
+              }
+            }
+          }
+        }
+      }
     } catch (e) {
       errorMessage.value = "Failed to load employees.";
       print(e);
@@ -97,6 +116,12 @@ class ManagerDashboardController extends GetxController {
   Future<void> selectEmployeeOnMap(int employeeId) async {
     selectedEmployeeId.value = employeeId;
     selectedEmployeeRange.value = null;
+
+    final loc = employeeLocations[employeeId];
+    if (loc != null) {
+      dashboardMapController.move(loc, 13.0);
+    }
+
     isRangeLoading.value = true;
     try {
       final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());

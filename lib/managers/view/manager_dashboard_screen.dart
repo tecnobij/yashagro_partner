@@ -7,6 +7,7 @@ import 'package:partener_app/managers/controller/manager_dashboard_controller.da
 import 'package:partener_app/models/user_model.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:partener_app/services/routing_service.dart';
+import 'package:partener_app/widgets/fullscreen_map_screen.dart';
 
 import 'package:partener_app/managers/view/manager_employee_details_screen.dart';
 import 'package:partener_app/marketer/view/marketer_map_screen.dart';
@@ -255,12 +256,14 @@ class ManagerDashboardScreen extends StatelessWidget {
 
     if (rangeData != null) {
       final locations = rangeData['locations'] as List<dynamic>? ?? [];
-      
+
       // Sort locations chronologically
       final sortedLocations = List<dynamic>.from(locations);
       sortedLocations.sort((a, b) {
-        final aTime = a['recorded_at']?.toString() ?? a['created_at']?.toString() ?? '';
-        final bTime = b['recorded_at']?.toString() ?? b['created_at']?.toString() ?? '';
+        final aTime =
+            a['recorded_at']?.toString() ?? a['created_at']?.toString() ?? '';
+        final bTime =
+            b['recorded_at']?.toString() ?? b['created_at']?.toString() ?? '';
         return aTime.compareTo(bTime);
       });
 
@@ -268,7 +271,8 @@ class ManagerDashboardScreen extends StatelessWidget {
         final locStr = loc['location'] as String?;
         if (locStr != null) {
           final accuracyVal = loc['accuracy'];
-          final accuracy = double.tryParse(accuracyVal?.toString() ?? '') ?? 0.0;
+          final accuracy =
+              double.tryParse(accuracyVal?.toString() ?? '') ?? 0.0;
           if (accuracy > 100) {
             continue; // skip highly inaccurate points that cause jitter
           }
@@ -310,13 +314,15 @@ class ManagerDashboardScreen extends StatelessWidget {
             child: Stack(
               children: [
                 FlutterMap(
+                  mapController: controller.dashboardMapController,
                   options: MapOptions(
                     initialCenter: initialCenter,
                     initialZoom: selectedEmpLastLoc != null ? 13.0 : 5.0,
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.yashagro.app',
                     ),
                     if (routePoints.isNotEmpty)
@@ -332,14 +338,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                           final emp = controller.employees.firstWhereOrNull(
                             (e) => e.id == entry.key,
                           );
-                          final statusData = controller.employeeStatuses[entry.key];
-                          final workSession =
-                              statusData != null
-                                  ? statusData['work_session']
-                                  : null;
-                          final isOnline =
-                              (workSession != null && workSession['status'] == 'ACTIVE') ||
-                              (statusData != null && statusData['current_status'] == 'WORKING');
+                          final isOnline = emp?.status == 'ACTIVE';
 
                           return Marker(
                             point: entry.value,
@@ -347,7 +346,8 @@ class ManagerDashboardScreen extends StatelessWidget {
                             height: 55,
                             child: GestureDetector(
                               onTap:
-                                  () => controller.selectEmployeeOnMap(entry.key),
+                                  () =>
+                                      controller.selectEmployeeOnMap(entry.key),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -438,7 +438,10 @@ class ManagerDashboardScreen extends StatelessWidget {
                                         ? Colors.green.shade600
                                         : Colors.orange.shade600,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.1),
@@ -460,34 +463,89 @@ class ManagerDashboardScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (routePoints.isNotEmpty || selectedEmpLastLoc != null)
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            spreadRadius: 1,
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.fullscreen_rounded,
+                            color: Colors.blue,
                           ),
-                        ],
+                          tooltip: "Full Screen Map",
+                          onPressed: () {
+                            final emp = controller.employees.firstWhereOrNull(
+                              (e) =>
+                                  e.id == controller.selectedEmployeeId.value,
+                            );
+                            Get.to(
+                              () => FullscreenMapScreen(
+                                routePoints: routePoints,
+                                visits: visits,
+                                title: emp?.name ?? 'Team Location Map',
+                                subtitle:
+                                    emp != null
+                                        ? DateFormat(
+                                          'EEEE, d MMMM yyyy',
+                                        ).format(DateTime.now())
+                                        : null,
+                                initialCenter:
+                                    selectedEmpLastLoc ?? initialCenter,
+                                employeeLocations: controller.employeeLocations,
+                                employees: controller.employees,
+                                isTeamMode: emp == null,
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                      child: IconButton(
-                        icon: const Icon(Icons.map_rounded, color: Colors.blue),
-                        tooltip: "Open in Google Maps",
-                        onPressed: () {
-                          final pts = routePoints.isNotEmpty 
-                              ? routePoints 
-                              : [selectedEmpLastLoc!];
-                          RoutingService.launchGoogleMapsRoute(pts);
-                        },
-                      ),
-                    ),
+                      if (routePoints.isNotEmpty ||
+                          selectedEmpLastLoc != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.navigation_rounded,
+                              color: Colors.blue,
+                            ),
+                            tooltip: "Open in Google Maps",
+                            onPressed: () {
+                              final pts =
+                                  routePoints.isNotEmpty
+                                      ? routePoints
+                                      : [selectedEmpLastLoc!];
+                              RoutingService.launchGoogleMapsRoute(pts);
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -519,11 +577,7 @@ class ManagerDashboardScreen extends StatelessWidget {
     final rangeData = controller.selectedEmployeeRange.value;
     final workSession = rangeData != null ? rangeData['work_session'] : null;
     final travelMeter = rangeData != null ? rangeData['travel_meter'] ?? 0 : 0;
-    final statusData = controller.employeeStatuses[emp.id];
-    final liveSession = statusData != null ? statusData['work_session'] : null;
-    final isOnline =
-        (liveSession != null && liveSession['status'] == 'ACTIVE') ||
-        (statusData != null && statusData['current_status'] == 'WORKING');
+    final isOnline = emp.status == 'ACTIVE';
 
     String loginTime = 'N/A';
     String logoutTime = 'N/A';
@@ -821,57 +875,50 @@ class _EmployeePremiumCard extends StatelessWidget {
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Obx(() {
-                        final statusData =
-                            controller.employeeStatuses[employee.id];
-                        final workSession =
-                            statusData != null
-                                ? statusData['work_session']
-                                : null;
-                        final isOnline =
-                            (workSession != null && workSession['status'] == 'ACTIVE') ||
-                            (statusData != null && statusData['current_status'] == 'WORKING');
+                      Builder(
+                        builder: (context) {
+                          final isOnline = employee.status == 'ACTIVE';
 
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                isOnline
-                                    ? Colors.green.shade50
-                                    : Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: isOnline ? Colors.green : Colors.red,
-                                  shape: BoxShape.circle,
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isOnline
+                                      ? Colors.green.shade50
+                                      : Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: isOnline ? Colors.green : Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isOnline ? 'Online' : 'Offline',
-                                style: TextStyle(
-                                  color:
-                                      isOnline
-                                          ? Colors.green.shade800
-                                          : Colors.red.shade800,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 4),
+                                Text(
+                                  isOnline ? 'Online' : 'Offline',
+                                  style: TextStyle(
+                                    color:
+                                        isOnline
+                                            ? Colors.green.shade800
+                                            : Colors.red.shade800,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [

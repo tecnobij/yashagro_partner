@@ -51,12 +51,15 @@ class SuperManagerDashboardScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: Obx(() {
-          final isFirstLoad = controller.isLoading.value &&
+          final isFirstLoad =
+              controller.isLoading.value &&
               controller.managers.isEmpty &&
               controller.employees.isEmpty;
 
           if (isFirstLoad) {
-            return const Center(child: CircularProgressIndicator(color: Colors.purple));
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.purple),
+            );
           }
 
           if (controller.errorMessage.value.isNotEmpty &&
@@ -92,12 +95,18 @@ class SuperManagerDashboardScreen extends StatelessWidget {
               children: [
                 // Summary Panel Card
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.purple.shade800, Colors.purple.shade500],
+                        colors: [
+                          Colors.purple.shade800,
+                          Colors.purple.shade500,
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -117,10 +126,20 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                           children: [
                             Text(
                               "${controller.managers.length}",
-                              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 4),
-                            const Text("Total Managers", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            const Text(
+                              "Total Managers",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                         Container(width: 1, height: 40, color: Colors.white24),
@@ -128,10 +147,20 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                           children: [
                             Text(
                               "${controller.employees.length}",
-                              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 4),
-                            const Text("Total Marketers", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            const Text(
+                              "Total Marketers",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -141,22 +170,30 @@ class SuperManagerDashboardScreen extends StatelessWidget {
 
                 // Search Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: TextField(
                     onChanged: (val) => controller.searchQuery.value = val,
                     decoration: InputDecoration(
-                      hintText: controller.currentTab.value == 0
-                          ? "Search managers by name, ID, phone..."
-                          : "Search marketers by name, ID, manager...",
+                      hintText:
+                          controller.currentTab.value == 0
+                              ? "Search managers by name, ID, phone..."
+                              : "Search marketers by name, ID, manager...",
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      suffixIcon: controller.searchQuery.value.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.grey),
-                              onPressed: () {
-                                controller.searchQuery.value = '';
-                              },
-                            )
-                          : null,
+                      suffixIcon:
+                          controller.searchQuery.value.isNotEmpty
+                              ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  controller.searchQuery.value = '';
+                                },
+                              )
+                              : null,
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -170,7 +207,10 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.purple.shade300, width: 1.5),
+                        borderSide: BorderSide(
+                          color: Colors.purple.shade300,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -178,7 +218,10 @@ class SuperManagerDashboardScreen extends StatelessWidget {
 
                 // Custom Tab Bar Pills
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
@@ -190,21 +233,26 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: controller.currentTab.value == 0
-                                  ? Colors.purple.shade600
-                                  : Colors.white,
+                              color:
+                                  controller.currentTab.value == 0
+                                      ? Colors.purple.shade600
+                                      : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: controller.currentTab.value == 0
-                                    ? Colors.purple.shade600
-                                    : Colors.grey.shade300,
+                                color:
+                                    controller.currentTab.value == 0
+                                        ? Colors.purple.shade600
+                                        : Colors.grey.shade300,
                               ),
                             ),
                             alignment: Alignment.center,
                             child: Text(
                               "Managers (${controller.filteredManagers.length})",
                               style: TextStyle(
-                                color: controller.currentTab.value == 0 ? Colors.white : Colors.black87,
+                                color:
+                                    controller.currentTab.value == 0
+                                        ? Colors.white
+                                        : Colors.black87,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -222,21 +270,26 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: controller.currentTab.value == 1
-                                  ? Colors.purple.shade600
-                                  : Colors.white,
+                              color:
+                                  controller.currentTab.value == 1
+                                      ? Colors.purple.shade600
+                                      : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: controller.currentTab.value == 1
-                                    ? Colors.purple.shade600
-                                    : Colors.grey.shade300,
+                                color:
+                                    controller.currentTab.value == 1
+                                        ? Colors.purple.shade600
+                                        : Colors.grey.shade300,
                               ),
                             ),
                             alignment: Alignment.center,
                             child: Text(
                               "Marketers (${controller.filteredEmployees.length})",
                               style: TextStyle(
-                                color: controller.currentTab.value == 1 ? Colors.white : Colors.black87,
+                                color:
+                                    controller.currentTab.value == 1
+                                        ? Colors.white
+                                        : Colors.black87,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -250,9 +303,10 @@ class SuperManagerDashboardScreen extends StatelessWidget {
 
                 // Tab Content List
                 Expanded(
-                  child: controller.currentTab.value == 0
-                      ? _buildManagersTab(context, controller)
-                      : _buildEmployeesTab(context, controller),
+                  child:
+                      controller.currentTab.value == 0
+                          ? _buildManagersTab(context, controller)
+                          : _buildEmployeesTab(context, controller),
                 ),
               ],
             ),
@@ -262,7 +316,10 @@ class SuperManagerDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildManagersTab(BuildContext context, SuperManagerDashboardController controller) {
+  Widget _buildManagersTab(
+    BuildContext context,
+    SuperManagerDashboardController controller,
+  ) {
     final list = controller.filteredManagers;
     if (list.isEmpty) {
       return _buildEmptyState("No managers found matching your search.");
@@ -276,7 +333,10 @@ class SuperManagerDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmployeesTab(BuildContext context, SuperManagerDashboardController controller) {
+  Widget _buildEmployeesTab(
+    BuildContext context,
+    SuperManagerDashboardController controller,
+  ) {
     final list = controller.filteredEmployees;
     if (list.isEmpty) {
       return _buildEmptyState("No marketers found matching your search.");
@@ -286,11 +346,13 @@ class SuperManagerDashboardScreen extends StatelessWidget {
       itemCount: list.length,
       itemBuilder: (context, index) {
         final employee = list[index];
-        final managerName = controller.employeeManagers[employee.id] ?? "Loading...";
+        final managerName =
+            controller.employeeManagers[employee.id] ?? "Loading...";
         return _EmployeeCard(
           employee: employee,
           managerName: managerName,
-          onReassign: () => _showReassignBottomSheet(context, employee, controller),
+          onReassign:
+              () => _showReassignBottomSheet(context, employee, controller),
         );
       },
     );
@@ -308,12 +370,20 @@ class SuperManagerDashboardScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.shade300),
+            Icon(
+              Icons.search_off_rounded,
+              size: 64,
+              color: Colors.grey.shade300,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -321,7 +391,11 @@ class SuperManagerDashboardScreen extends StatelessWidget {
     );
   }
 
-  void _showReassignBottomSheet(BuildContext context, UserModel employee, SuperManagerDashboardController controller) {
+  void _showReassignBottomSheet(
+    BuildContext context,
+    UserModel employee,
+    SuperManagerDashboardController controller,
+  ) {
     final searchQuery = ''.obs;
 
     showModalBottomSheet(
@@ -356,11 +430,19 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                   const SizedBox(height: 18),
                   Text(
                     "Reassign Manager for:",
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   Text(
                     employee.name ?? "Marketer",
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -380,10 +462,15 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                   Expanded(
                     child: Obx(() {
                       final query = searchQuery.value.toLowerCase();
-                      final filteredList = controller.managers.where((m) {
-                        return (m.name ?? '').toLowerCase().contains(query) ||
-                            (m.mobileNo ?? '').toLowerCase().contains(query);
-                      }).toList();
+                      final filteredList =
+                          controller.managers.where((m) {
+                            return (m.name ?? '').toLowerCase().contains(
+                                  query,
+                                ) ||
+                                (m.mobileNo ?? '').toLowerCase().contains(
+                                  query,
+                                );
+                          }).toList();
 
                       if (filteredList.isEmpty) {
                         return const Center(child: Text("No managers found."));
@@ -397,27 +484,49 @@ class SuperManagerDashboardScreen extends StatelessWidget {
                           return Card(
                             color: Colors.white,
                             margin: const EdgeInsets.only(bottom: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             elevation: 0,
                             borderOnForeground: false,
                             child: ListTile(
                               leading: CircleAvatar(
                                 radius: 20,
                                 backgroundColor: Colors.purple.shade50,
-                                backgroundImage: (manager.image != null && manager.image!.isNotEmpty)
-                                    ? NetworkImage(manager.image!)
-                                    : null,
-                                child: (manager.image == null || manager.image!.isEmpty)
-                                    ? Icon(Icons.person, color: Colors.purple.shade400)
-                                    : null,
+                                backgroundImage:
+                                    (manager.image != null &&
+                                            manager.image!.isNotEmpty)
+                                        ? NetworkImage(manager.image!)
+                                        : null,
+                                child:
+                                    (manager.image == null ||
+                                            manager.image!.isEmpty)
+                                        ? Icon(
+                                          Icons.person,
+                                          color: Colors.purple.shade400,
+                                        )
+                                        : null,
                               ),
-                              title: Text(manager.name ?? "Unknown", style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text("ID: ${manager.id ?? 'N/A'} | ${manager.mobileNo ?? ''}"),
-                              trailing: Icon(Icons.chevron_right, color: Colors.purple.shade400),
+                              title: Text(
+                                manager.name ?? "Unknown",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "ID: ${manager.id ?? 'N/A'} | ${manager.mobileNo ?? ''}",
+                              ),
+                              trailing: Icon(
+                                Icons.chevron_right,
+                                color: Colors.purple.shade400,
+                              ),
                               onTap: () async {
                                 if (employee.id != null && manager.id != null) {
                                   Get.back();
-                                  await controller.reassignEmployeeManager(employee.id!, manager.id!);
+                                  await controller.reassignEmployeeManager(
+                                    employee.id!,
+                                    manager.id!,
+                                  );
                                 }
                               },
                             ),
@@ -448,7 +557,11 @@ class _ManagerCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Material(
@@ -466,26 +579,54 @@ class _ManagerCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 26,
                   backgroundColor: Colors.purple.shade50,
-                  backgroundImage: (manager.image != null && manager.image!.isNotEmpty)
-                      ? NetworkImage(manager.image!)
-                      : null,
-                  child: (manager.image == null || manager.image!.isEmpty)
-                      ? Icon(Icons.person, size: 28, color: Colors.purple.shade400)
-                      : null,
+                  backgroundImage:
+                      (manager.image != null && manager.image!.isNotEmpty)
+                          ? NetworkImage(manager.image!)
+                          : null,
+                  child:
+                      (manager.image == null || manager.image!.isEmpty)
+                          ? Icon(
+                            Icons.person,
+                            size: 28,
+                            color: Colors.purple.shade400,
+                          )
+                          : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(manager.name ?? "Unknown", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        manager.name ?? "Unknown",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text("ID: ${manager.id ?? 'N/A'}", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                      Text(manager.mobileNo ?? "No Phone", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text(
+                        "ID: ${manager.id ?? 'N/A'}",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      Text(
+                        manager.mobileNo ?? "No Phone",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade400),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: Colors.grey.shade400,
+                ),
               ],
             ),
           ),
@@ -514,7 +655,11 @@ class _EmployeeCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Material(
@@ -532,43 +677,122 @@ class _EmployeeCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 26,
                   backgroundColor: Colors.blue.shade50,
-                  backgroundImage: (employee.image != null && employee.image!.isNotEmpty)
-                      ? NetworkImage(employee.image!)
-                      : null,
-                  child: (employee.image == null || employee.image!.isEmpty)
-                      ? Icon(Icons.person, size: 28, color: Colors.blue.shade400)
-                      : null,
+                  backgroundImage:
+                      (employee.image != null && employee.image!.isNotEmpty)
+                          ? NetworkImage(employee.image!)
+                          : null,
+                  child:
+                      (employee.image == null || employee.image!.isEmpty)
+                          ? Icon(
+                            Icons.person,
+                            size: 28,
+                            color: Colors.blue.shade400,
+                          )
+                          : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(employee.name ?? "Unknown", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("ID: ${employee.id ?? 'N/A'}", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                      Text(employee.mobileNo ?? "No Phone", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: managerName == "No Manager" ? Colors.red.shade50 : Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(8),
+                      Text(
+                        employee.name ?? "Unknown",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Text(
-                          "Manager: $managerName",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: managerName == "No Manager" ? Colors.red.shade700 : Colors.green.shade700,
+                      ),
+                      Text(
+                        employee.mobileNo ?? "No Phone",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  managerName == "No Manager"
+                                      ? Colors.red.shade50
+                                      : Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "Manager: $managerName",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    managerName == "No Manager"
+                                        ? Colors.red.shade700
+                                        : Colors.green.shade700,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Builder(
+                            builder: (context) {
+                              final isOnline = employee.status == 'ACTIVE';
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isOnline
+                                          ? Colors.green.shade50
+                                          : Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isOnline
+                                                ? Colors.green
+                                                : Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isOnline ? 'Online' : 'Offline',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            isOnline
+                                                ? Colors.green.shade700
+                                                : Colors.red.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.swap_horiz_rounded, color: Colors.purple.shade600),
+                  icon: Icon(
+                    Icons.swap_horiz_rounded,
+                    color: Colors.purple.shade600,
+                  ),
                   onPressed: onReassign,
                   tooltip: "Change Manager",
                 ),

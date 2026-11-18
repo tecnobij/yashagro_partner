@@ -13,6 +13,7 @@ class UserModel {
   final bool? isAccountSetup;
   final String? email;
   final String? mobileNo;
+  final String? status;
 
   UserModel({
     this.id,
@@ -29,6 +30,7 @@ class UserModel {
     this.isAccountSetup,
     this.email,
     this.mobileNo,
+    this.status,
   });
 
   factory UserModel.fromJson(Map<String?, dynamic> json) {
@@ -47,6 +49,7 @@ class UserModel {
       isAccountSetup: json['isAccountSetup'],
       mobileNo: json['mobile_no'],
       email: json['email'],
+      status: json['status'],
     );
   }
 }
