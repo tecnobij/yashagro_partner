@@ -10,6 +10,7 @@ import 'package:partener_app/services/routing_service.dart';
 
 import 'package:partener_app/managers/view/manager_employee_details_screen.dart';
 import 'package:partener_app/marketer/view/marketer_map_screen.dart';
+import 'package:partener_app/expert/employee_tracking/view/work_status_widget.dart' as import_work_status;
 import 'package:partener_app/utils/app_routes.dart';
 
 class ManagerDashboardScreen extends StatelessWidget {
@@ -49,6 +50,7 @@ class ManagerDashboardScreen extends StatelessWidget {
           );
         }),
         actions: [
+          const import_work_status.WorkStatusWidget(),
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(

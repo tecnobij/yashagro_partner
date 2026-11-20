@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:partener_app/expert/employee_tracking/controller/employee_tracking_controller.dart';
 import 'package:partener_app/expert/profile/view/profile_screen.dart';
 import 'package:partener_app/managers/view/manager_dashboard_screen.dart';
 
@@ -12,6 +13,12 @@ class ManagersHomeScreen extends StatefulWidget {
 
 class _ManagersHomeScreenState extends State<ManagersHomeScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Get.put(EmployeeTrackingController());
+  }
 
   final List<Widget> _screens = [
     const ManagerDashboardScreen(),

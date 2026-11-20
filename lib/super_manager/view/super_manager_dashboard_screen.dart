@@ -485,6 +485,14 @@ class _ManagerCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Icon(Icons.work_history_rounded, color: Colors.purple.shade600, size: 22),
+                  tooltip: "Manager Work Details",
+                  onPressed: () {
+                    Get.to(() => ManagerEmployeeDetailsScreen(employee: manager));
+                  },
+                ),
+                const SizedBox(width: 4),
                 Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade400),
               ],
             ),
