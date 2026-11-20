@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:partener_app/models/chats_model.dart';
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/controllets/auth_controller.dart';
 import 'package:partener_app/expert/chats/controller/chats_controller.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -100,11 +101,21 @@ class WebSocketController extends GetxController with WidgetsBindingObserver {
     socket!.onError((data) {
       _isConnecting = false;
       log('⚠️ WebSocket Error: $data', name: 'websocket');
+      if (data != null &&
+          (data.toString().contains('401') ||
+              data.toString().toLowerCase().contains('unauthorized'))) {
+        AuthController.handleUnauthorized();
+      }
     });
 
     socket!.onConnectError((data) {
       _isConnecting = false;
       log('⚠️ WebSocket Connect Error: $data', name: 'websocket');
+      if (data != null &&
+          (data.toString().contains('401') ||
+              data.toString().toLowerCase().contains('unauthorized'))) {
+        AuthController.handleUnauthorized();
+      }
     });
 
     socket!.connect();

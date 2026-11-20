@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/controllets/auth_controller.dart';
 import 'package:partener_app/expert/lab_report/model/lab_report_model.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 
@@ -35,6 +36,9 @@ class LabReportRepo {
 
       return reports;
     } else {
+      if (response.statusCode == 401) {
+        AuthController.handleUnauthorized();
+      }
       throw Exception('Failed to load lab reports');
     }
   }

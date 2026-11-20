@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 
 class SuperManagerApiService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String _base = ApiRoutes.baseUri;
 
   Future<Options> _getAuthOptions() async {

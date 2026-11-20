@@ -4,10 +4,11 @@ import 'package:partener_app/constants.dart';
 import 'package:partener_app/expert/visits/model/visit_feedback_model.dart';
 import 'package:partener_app/expert/visits/model/visit_model.dart';
 import 'package:partener_app/services/api_service.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 
 class VisitApiService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final ApiService _apiService = ApiService();
   final String baseUrl = ApiRoutes.baseUri;
 

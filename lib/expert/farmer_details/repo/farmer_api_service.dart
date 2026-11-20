@@ -2,10 +2,11 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:partener_app/constants.dart';
 import 'package:partener_app/models/user_model.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 
 class FarmerApiService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String baseUrl = ApiRoutes.baseUri;
 
   /// Fetch User Profile

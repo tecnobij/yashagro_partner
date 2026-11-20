@@ -2,11 +2,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import '../model/profile_model.dart';
 
 class ProfileService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String baseUrl = "${ApiRoutes.baseUri}${ApiRoutes.authEndpoint}";
 
   /// Fetch profile from API

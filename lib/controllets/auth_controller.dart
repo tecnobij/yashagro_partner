@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import 'package:partener_app/services/api_service.dart';
@@ -102,6 +103,49 @@ class AuthController extends GetxController {
         break;
       default:
         showErrorSnackbar("Unauthorized access.");
+    }
+  }
+
+  static bool _isLoggingOut = false;
+
+  /// **Global Auto-Logout on 401 Unauthorized**
+  static Future<void> handleUnauthorized() async {
+    // If user is already on login or splash screen, no need to logout again
+    if (Get.currentRoute == AppRoutes.login || Get.currentRoute == AppRoutes.splash) {
+      return;
+    }
+
+    if (_isLoggingOut) return;
+    _isLoggingOut = true;
+
+    log('⚠️ 401 Unauthorized encountered. Triggering auto-logout...', name: 'auth');
+
+    try {
+      final AuthController authController = Get.isRegistered<AuthController>()
+          ? Get.find<AuthController>()
+          : Get.put(AuthController());
+
+      if (Get.context != null) {
+        Get.rawSnackbar(
+          title: "Session Expired",
+          message: "Your session has expired. Please log in again.",
+          backgroundColor: Colors.red.shade700,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(12),
+          borderRadius: 8,
+        );
+      }
+
+      await authController.logout();
+    } catch (e) {
+      log('Error during auto-logout: $e', name: 'auth');
+      await SharedPrefs.clearUserData();
+      Get.offAllNamed(AppRoutes.login);
+    } finally {
+      Future.delayed(const Duration(seconds: 3), () {
+        _isLoggingOut = false;
+      });
     }
   }
 

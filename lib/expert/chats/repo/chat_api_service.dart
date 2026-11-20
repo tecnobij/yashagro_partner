@@ -5,13 +5,15 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/controllets/auth_controller.dart';
 import 'package:partener_app/models/chats_model.dart';
 import 'package:partener_app/models/pagination_model.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import 'package:partener_app/expert/chats/model/chat_room_model.dart';
 
 class ChatApiService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String baseUrl = ApiRoutes.baseUri;
 
   /// Fetch Expert Chat Rooms with Pagination and Search
@@ -157,6 +159,9 @@ class ChatApiService {
         Map<String, dynamic> jsonResponse = json.decode(responseData);
         return ChatsModel.fromJson(jsonResponse);
       } else {
+        if (response.statusCode == 401) {
+          AuthController.handleUnauthorized();
+        }
         log("❌ Failed to send message: ${response.statusCode}");
         return null;
       }

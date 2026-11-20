@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:partener_app/constants.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 import 'package:partener_app/expert/farmer_details/model/farmer_plot_model.dart';
 import 'package:partener_app/expert/work_diary/model/workD_darie_model.dart';
 
 class WorkDiaryService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String _base = ApiRoutes.baseUri;
 
   /// Fetch Work Diaries

@@ -6,10 +6,11 @@ import 'package:partener_app/marketer/model/marketer_month_summary_model.dart';
 import 'package:partener_app/marketer/model/marketer_route_history_model.dart';
 import 'package:partener_app/marketer/model/marketer_today_summary_model.dart';
 import 'package:partener_app/models/user_model.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/services/shared_prefs.dart';
 
 class MarketerDashboardService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
 
   Future<MarketerDashboardModel?> fetchDashboard() async {
     final token = await SharedPrefs.getUserToken();

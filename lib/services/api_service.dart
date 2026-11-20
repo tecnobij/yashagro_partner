@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:partener_app/constants.dart' show ApiRoutes;
+import 'package:partener_app/controllets/auth_controller.dart';
+import 'package:partener_app/services/dio_client.dart';
 import 'package:partener_app/models/chats_model.dart';
 import 'package:partener_app/models/pagination_model.dart';
 import 'package:partener_app/services/shared_prefs.dart';
@@ -11,35 +13,10 @@ import 'package:partener_app/models/user_model.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final Dio _dio = Dio();
+  final Dio _dio = createDioClient();
   final String baseUrl = ApiRoutes.baseUri;
 
-  ApiService() {
-    // ✅ Set default headers to match Postman
-    _dio.options.headers = {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    };
-
-    // ✅ Set connection and receive timeouts to prevent immediate 0-second timeout
-    _dio.options.connectTimeout = const Duration(seconds: 15);
-    _dio.options.receiveTimeout = const Duration(seconds: 15);
-
-    // ✅ Configure HttpClient
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-      
-      // ✅ Bypass SSL certificate verification for dev API
-      if (baseUrl.contains("dev-api") || baseUrl.contains("192.168")) {
-        client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-        
-        // ✅ Force direct connection (bypassing any stale Wi-Fi proxies on the test device/emulator)
-        client.findProxy = (uri) => "DIRECT";
-      }
-      
-      return client;
-    };
-  }
+  ApiService();
 
   Future<bool> sendOtp(String mobile) async {
     print("mobile = $mobile");
@@ -241,6 +218,9 @@ class ApiService {
         log("❌ Unexpected send message response: $jsonResponse");
         return null;
       } else {
+        if (response.statusCode == 401) {
+          AuthController.handleUnauthorized();
+        }
         log("❌ Failed to send message: ${response.statusCode}");
         return null;
       }
