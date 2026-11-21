@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.partener_app"
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         // ✅ Enable core library desugaring (required by flutter_local_notifications)
