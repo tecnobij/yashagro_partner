@@ -7,6 +7,7 @@ import 'package:partener_app/expert/employee_tracking/repo/employee_tracking_ser
 import 'package:partener_app/expert/employee_tracking/view/work_image_capture_screen.dart';
 import 'package:partener_app/services/background_location_service.dart';
 import 'package:partener_app/services/shared_prefs.dart';
+import 'package:partener_app/utils/location_disclosure_dialog.dart';
 
 class EmployeeTrackingController extends GetxController {
   final EmployeeTrackingService _service = EmployeeTrackingService();
@@ -39,6 +40,20 @@ class EmployeeTrackingController extends GetxController {
   }
 
   Future<void> toggleWorkStatus() async {
+    // If starting work, ensure Google Play prominent disclosure is agreed to first
+    if (!isWorking.value) {
+      final allowed =
+          await LocationDisclosureDialog.ensureDisclosureAndPermission();
+      if (!allowed) {
+        Get.snackbar(
+          "Permission Required",
+          "Location access is required to track work attendance and travel routes.",
+          backgroundColor: Colors.orange.shade100,
+        );
+        return;
+      }
+    }
+
     isLoading.value = true;
 
     final resultData = await Get.to(() => WorkImageCaptureScreen(isStartingWork: !isWorking.value)) as Map<String, dynamic>?;
@@ -121,6 +136,10 @@ class EmployeeTrackingController extends GetxController {
   }
 
   Future<bool> _handleLocationPermission() async {
+    final allowed =
+        await LocationDisclosureDialog.ensureDisclosureAndPermission();
+    if (!allowed) return false;
+
     bool serviceEnabled;
     LocationPermission permission;
 

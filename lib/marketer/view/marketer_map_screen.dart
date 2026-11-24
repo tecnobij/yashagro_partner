@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:partener_app/marketer/controller/marketer_dashboard_controller.dart';
 import 'package:partener_app/services/routing_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:partener_app/utils/location_disclosure_dialog.dart';
 
 class MarketerMapScreen extends StatefulWidget {
   final int? employeeId;
@@ -28,6 +29,10 @@ class _MarketerMapScreenState extends State<MarketerMapScreen> {
 
   Future<void> _fetchCurrentLocation() async {
     try {
+      final allowed =
+          await LocationDisclosureDialog.ensureDisclosureAndPermission();
+      if (!allowed) return;
+
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
 

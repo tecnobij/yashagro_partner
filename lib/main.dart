@@ -21,17 +21,35 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SharedPrefs.init();
-  String initialRoute = await getInitialRoute();
 
-  // ✅ Initialize OneSignal
-  await _initializeOneSignal();
+  String initialRoute = AppRoutes.splash;
+  try {
+    await SharedPrefs.init();
+    initialRoute = await getInitialRoute();
+  } catch (e) {
+    log('❌ Error initializing SharedPrefs or getting initial route: $e');
+  }
 
-  // ✅ Initialize background service for location tracking
-  await initializeBackgroundService();
+  // ✅ Initialize OneSignal safely
+  try {
+    await _initializeOneSignal();
+  } catch (e) {
+    log('❌ Error initializing OneSignal: $e');
+  }
+
+  // ✅ Initialize background service for location tracking safely
+  try {
+    await initializeBackgroundService();
+  } catch (e) {
+    log('❌ Error initializing background service: $e');
+  }
 
   // ✅ Auto-restart background tracking if employee was working before app close
-  await _restoreBackgroundTrackingIfNeeded();
+  try {
+    await _restoreBackgroundTrackingIfNeeded();
+  } catch (e) {
+    log('❌ Error restoring background tracking: $e');
+  }
 
   runApp(MyApp(initialRoute: initialRoute));
 }
@@ -46,7 +64,7 @@ class MyApp extends StatelessWidget {
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Partner App',
+      title: 'Yash Team',
       theme: ThemeData(primarySwatch: Colors.green),
       initialRoute: initialRoute,
       getPages: [

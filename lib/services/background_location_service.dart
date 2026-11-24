@@ -28,18 +28,23 @@ Future<void> initializeBackgroundService() async {
 
   // Android foreground notification channel
   if (Platform.isAndroid) {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      _kChannelId,
-      _kChannelName,
-      description: 'Used to show location tracking status',
-      importance: Importance.low,
-    );
-    final FlutterLocalNotificationsPlugin plugin =
-        FlutterLocalNotificationsPlugin();
-    await plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+    try {
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        _kChannelId,
+        _kChannelName,
+        description: 'Used to show location tracking status',
+        importance: Importance.low,
+      );
+      final FlutterLocalNotificationsPlugin plugin =
+          FlutterLocalNotificationsPlugin();
+      await plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.createNotificationChannel(channel);
+    } catch (e) {
+      log('⚠️ Could not create notification channel: $e', name: 'bg_location');
+    }
   }
 
   await service.configure(
@@ -137,7 +142,10 @@ void onBackgroundServiceStart(ServiceInstance service) async {
 
       final token = prefs.getString(_kTokenKey);
       if (token == null || token.isEmpty) {
-        log('⚠️ No auth token found. Skipping location update.', name: 'bg_location');
+        log(
+          '⚠️ No auth token found. Skipping location update.',
+          name: 'bg_location',
+        );
         return;
       }
 
@@ -171,11 +179,17 @@ void onBackgroundServiceStart(ServiceInstance service) async {
           'battery_percentage': batteryLevel,
           'speed': position.speed,
         };
-        log('📍 Emitting location via background WebSocket: $payload', name: 'bg_location');
+        log(
+          '📍 Emitting location via background WebSocket: $payload',
+          name: 'bg_location',
+        );
         socket!.emit('updateLocation', payload);
       } else {
         // Fallback to HTTP POST
-        log('⚠️ Background WebSocket not connected. Falling back to HTTP POST.', name: 'bg_location');
+        log(
+          '⚠️ Background WebSocket not connected. Falling back to HTTP POST.',
+          name: 'bg_location',
+        );
         final response = await dio.post(
           '${ApiRoutes.baseUri}${ApiRoutes.locationEndpoint}',
           data: {
@@ -191,7 +205,10 @@ void onBackgroundServiceStart(ServiceInstance service) async {
             },
           ),
         );
-        log('✅ Location uploaded via HTTP. Status: ${response.statusCode}', name: 'bg_location');
+        log(
+          '✅ Location uploaded via HTTP. Status: ${response.statusCode}',
+          name: 'bg_location',
+        );
       }
     } catch (e) {
       log('❌ Error in background location update: $e', name: 'bg_location');

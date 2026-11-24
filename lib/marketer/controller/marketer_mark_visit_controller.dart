@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:partener_app/marketer/repo/marketer_dashboard_service.dart';
 import 'package:partener_app/services/shared_prefs.dart';
+import 'package:partener_app/utils/location_disclosure_dialog.dart';
 
 class MarketerMarkVisitController extends GetxController {
   final MarketerDashboardService _service = MarketerDashboardService();
@@ -156,6 +157,12 @@ class MarketerMarkVisitController extends GetxController {
   }
 
   Future<Position> _determinePosition() async {
+    final allowed =
+        await LocationDisclosureDialog.ensureDisclosureAndPermission();
+    if (!allowed) {
+      throw Exception('Location permission disclosure not accepted.');
+    }
+
     bool serviceEnabled;
     LocationPermission permission;
 

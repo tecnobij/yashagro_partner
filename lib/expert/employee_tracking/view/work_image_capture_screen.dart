@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:partener_app/utils/location_disclosure_dialog.dart';
 import 'selfie_capture_screen.dart';
 import 'generic_camera_capture_screen.dart';
 
@@ -38,6 +39,16 @@ class _WorkImageCaptureScreenState extends State<WorkImageCaptureScreen> {
   }
 
   Future<void> _initiateLocationFetch() async {
+    final allowed =
+        await LocationDisclosureDialog.ensureDisclosureAndPermission();
+    if (!allowed) {
+      setState(() {
+        _locationError = "Location permission disclosure not accepted.";
+        _isFetchingLocation = false;
+      });
+      return;
+    }
+
     setState(() {
       _isFetchingLocation = true;
       _locationError = null;

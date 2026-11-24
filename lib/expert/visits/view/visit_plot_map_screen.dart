@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:partener_app/utils/location_disclosure_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VisitPlotMapScreen extends StatefulWidget {
@@ -359,6 +360,10 @@ class _VisitPlotMapScreenState extends State<VisitPlotMapScreen> {
   }
 
   Future<Position?> _getCurrentPosition() async {
+    final allowed =
+        await LocationDisclosureDialog.ensureDisclosureAndPermission();
+    if (!allowed) return null;
+
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.snackbar(

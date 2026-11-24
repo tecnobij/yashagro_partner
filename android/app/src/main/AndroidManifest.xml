@@ -14,9 +14,14 @@
  <uses-feature android:name="android.hardware.location.gps" />
  <uses-feature android:name="android.hardware.location.network" />
     <application
-        android:label="partener_app"
+        android:label="Yash Team"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <!-- Google Play Stalkerware & Monitoring Policy Compliance -->
+        <meta-data
+            android:name="isMonitoringTool"
+            android:value="enterprise_management" />
 
         <meta-data
             android:name="com.onesignal.NotificationServiceExtension.AppId"
